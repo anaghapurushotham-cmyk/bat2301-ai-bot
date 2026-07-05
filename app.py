@@ -12,7 +12,7 @@ You also need an API key in .streamlit/secrets.toml (see README).
 """
 
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # --- Page setup ---
 st.set_page_config(page_title="AI Assistant", page_icon=":robot_face:")
@@ -26,8 +26,7 @@ except KeyError:
     st.error("API key not found. Add GEMINI_API_KEY to your secrets file.")
     st.stop()
 
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-2.5-flash")
+client = genai.Client(api_key=api_key)
 
 
 # --- Load your documents (read once, then reused) ---
@@ -80,8 +79,10 @@ QUESTION:
 {question}
 """
         with st.spinner("Thinking..."):
-            response = model.generate_content(prompt)
-
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=prompt
+)
         answer = response.text
         st.session_state.messages.append({"role": "assistant", "content": answer})
         with st.chat_message("assistant"):
